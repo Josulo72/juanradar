@@ -1,0 +1,11 @@
+# Datos de Juan: contactos, ajustes y contraseña de correo. Nunca se suben.
+datos/
+# Entorno y navegador que crea 1-INSTALAR.bat
+motor/.venv/
+motor/browsers/
+motor/data/
+motor/.env
+__pycache__/
+*.pyc
+# Capturas con datos de personas reales
+captura-*.png

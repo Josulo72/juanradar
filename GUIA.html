@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radar Autónomos · guía</title>
+<style>
+:root{--papel:#f3efe6;--hoja:#fbf9f4;--tinta:#16211d;--tinta2:#4a5852;--linea:#ddd6c6;--verde:#0e5a4b;--verde2:#d9e8e1;--teja:#b9472f;--teja2:#f5dfd7;--oro:#a87a12;--oro2:#f3e7c6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--papel);color:var(--tinta);font:16px/1.6 "IBM Plex Sans","Segoe UI",system-ui,sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:44px 22px 90px}
+h1{font:600 40px/1.05 Fraunces,Georgia,serif;letter-spacing:-.02em;margin:0 0 10px}
+.lead{color:var(--tinta2);font-size:18px;margin:0 0 30px;padding-bottom:22px;border-bottom:2px solid var(--tinta)}
+h2{font:600 24px/1.2 Fraunces,Georgia,serif;margin:44px 0 12px;display:flex;gap:12px;align-items:baseline}
+h2 span{font:500 14px/1 ui-monospace,Consolas,monospace;color:var(--verde);border:1.5px solid var(--verde);border-radius:2px;padding:4px 7px}
+ol,ul{padding-left:22px;margin:0}li{margin:8px 0}
+code{font:14px ui-monospace,Consolas,monospace;background:var(--hoja);border:1px solid var(--linea);padding:1px 6px;border-radius:2px}
+table{width:100%;border-collapse:collapse;margin:8px 0;font-size:15px}
+td{padding:10px 12px 10px 0;border-bottom:1px solid var(--linea);vertical-align:top}
+td:first-child{font-weight:600;width:190px}
+.nota{background:var(--oro2);border-left:4px solid var(--oro);padding:12px 16px;margin:16px 0;font-size:15px}
+.ojo{background:var(--teja2);border-left:4px solid var(--teja);padding:12px 16px;margin:16px 0;font-size:15px}
+.ok{background:var(--verde2);border-left:4px solid var(--verde);padding:12px 16px;margin:16px 0;font-size:15px}
+img{max-width:100%;border:1px solid var(--linea);margin:10px 0}
+@media (max-width:560px){h1{font-size:31px}td:first-child{width:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Radar Autónomos</h1>
+  <p class="lead">Un programa que vive en tu computadora, busca en internet gente que trabaja por su cuenta en Argentina y te la deja ordenada en un panel para que la contactes. No usa cuentas de nadie más: todo es tuyo y queda en tu disco.</p>
+
+  <img src="captura-panel.png" alt="Captura del panel de Radar Autónomos">
+
+  <h2><span>1</span>Instalar (una sola vez)</h2>
+  <ol>
+    <li>Copiá la carpeta <code>RADAR-AUTONOMOS</code> entera a tu computadora (Windows 10 u 11), por ejemplo en <code>Documentos</code>.</li>
+    <li>Instalá <b>Python 3.12</b> desde <code>python.org/downloads</code>. En la primera pantalla marcá la casilla <b>«Add python.exe to PATH»</b>.</li>
+    <li>Abrí la carpeta y hacé doble clic en <code>1-INSTALAR</code>. Descarga el motor de búsqueda; tarda entre 5 y 15 minutos. Cuando diga <b>LISTO</b>, cerrá la ventana.</li>
+  </ol>
+  <div class="nota">Si Windows muestra «Windows protegió su PC» al abrir un archivo <code>.bat</code>, tocá <b>Más información → Ejecutar de todas formas</b>. Es un archivo de texto con comandos; podés abrirlo con el Bloc de notas para ver qué hace.</div>
+
+  <h2><span>2</span>Abrir el Radar</h2>
+  <p>Doble clic en <code>2-ABRIR-RADAR</code>. Se abre el panel en tu navegador (<code>http://127.0.0.1:8765</code>) y el robot empieza a buscar. Los primeros contactos aparecen en unos minutos.</p>
+  <ul>
+    <li>El robot busca <b>mientras el programa está abierto</b>: cada 2 horas hace una tanda de búsquedas. Si apagás la computadora, sigue donde quedó la próxima vez.</li>
+    <li>Si querés que se encienda solo al prender la computadora, doble clic en <code>3-ARRANCAR-CON-WINDOWS</code> (opcional).</li>
+    <li>Podés cerrar la pestaña del navegador cuando quieras; el robot sigue. Para volver al panel, abrí otra vez <code>2-ABRIR-RADAR</code>.</li>
+    <li>Para cerrar el programa del todo, usá el botón <b>Apagar</b> del panel.</li>
+  </ul>
+
+  <h2><span>3</span>Tus datos y tus mensajes</h2>
+  <p>En el panel, botón <b>Ajustes</b>:</p>
+  <table>
+    <tr><td>Tus datos</td><td>Tu nombre, la prepaga o productora que representás, una o dos frases con lo que ofrecés y tu firma. Quitá los corchetes <code>[ ]</code> al completar.</td></tr>
+    <tr><td>Mensajes</td><td>Los 3 emails de la secuencia y el mensaje de WhatsApp. Elegí el tono (Cercano, Formal o Breve) y retocá lo que quieras. No borres <code>{Baja}</code>: es la frase que le permite a la persona pedir que no le escribas más.</td></tr>
+    <tr><td>Búsqueda</td><td>En qué ciudades y qué oficios busca el robot. Una zona por línea (<code>Localidad | Provincia</code>) y una línea por rubro (<code>Rubro: oficio, oficio</code>). Agregá o quitá lo que quieras.</td></tr>
+  </table>
+
+  <h2><span>4</span>Contactar</h2>
+  <p>Tocá cualquier fila para abrir la ficha de la persona.</p>
+  <table>
+    <tr><td>WhatsApp con mensaje</td><td>Abre WhatsApp con tu mensaje ya escrito para esa persona. Lo revisás y lo enviás vos.</td></tr>
+    <tr><td>Email con mensaje</td><td>Abre tu programa de correo con el email ya escrito. Lo revisás y lo enviás vos.</td></tr>
+    <tr><td>Etapa</td><td>Nueva → Email 1 → Email 2 → Email 3 → Llamar. Cuando hables con alguien, cambiala a mano: <b>Respondió</b>, <b>Cotización</b>, <b>Cliente</b> o <b>Descartada</b>.</td></tr>
+    <tr><td>Tus notas</td><td>Lo que quieras recordar de esa persona. Se guarda con el botón Guardar.</td></tr>
+    <tr><td>Exportar</td><td>Descarga todos los contactos en un archivo que se abre con Excel.</td></tr>
+  </table>
+  <div class="nota"><b>«Unipersonal: Probable / Posible»</b> es una estimación del robot a partir de lo que dice la web de cada uno (habla en primera persona, firma con su título, menciona matrícula…). No confirma que sea monotributista: eso lo sabés al hablar con la persona.</div>
+
+  <h2><span>5</span>Emails automáticos (opcional)</h2>
+  <p>Si conectás tu correo, el programa envía solo la secuencia de 3 emails, detecta quién te respondió y quién pidió la baja, y deja de escribirles. Sirve Gmail, Outlook, Yahoo o el correo de tu dominio.</p>
+  <ol>
+    <li><b>Ajustes → Correo</b>. Elegí tu proveedor para que se completen los datos técnicos.</li>
+    <li>Escribí tu dirección y una <b>contraseña de aplicación</b>. No es tu contraseña normal: se crea en la configuración de seguridad de tu cuenta de correo (buscá «contraseña de aplicación» en la ayuda de tu proveedor; suele pedir tener activada la verificación en dos pasos). Queda guardada solo en tu computadora.</li>
+    <li>Tocá <b>Enviarme una prueba</b>. Te llegan a vos los 3 emails tal como los recibiría un contacto. Leelos como si fueras esa persona.</li>
+    <li>Cuando te convenzan, marcá <b>Enviar los emails automáticamente</b> y guardá.</li>
+  </ol>
+  <div class="ok">Mientras falte completar tus datos o conectar el correo, el programa no envía nada por su cuenta, aunque marques la casilla.</div>
+
+  <h2><span>6</span>Reglas para no meterte en problemas</h2>
+  <div class="ojo">
+    <ul>
+      <li><b>Llamadas:</b> llamá vos, nunca con robots, y consultá antes el <b>Registro Nacional «No Llame»</b> (Ley 26.951): a los números inscriptos no se los puede llamar para ofrecer servicios.</li>
+      <li><b>Bajas:</b> si alguien pide la baja, se respeta siempre. El programa lo marca solo, le quita los botones de WhatsApp y email y no deja cambiarle la etapa. La Ley 25.326 de Protección de Datos Personales le da ese derecho.</li>
+      <li><b>Datos:</b> el robot solo guarda lo que cada persona publica en su propia web para que la contacten por trabajo. No agregues datos personales de otro origen ni compartas la lista.</li>
+      <li><b>Cantidad:</b> no pases de 50 emails por día, para que tu proveedor de correo no te marque como spam.</li>
+      <li><b>WhatsApp:</b> siempre a mano y de a uno. Los envíos masivos automáticos terminan con el número bloqueado.</li>
+    </ul>
+  </div>
+
+  <h2><span>7</span>Si algo no anda</h2>
+  <table>
+    <tr><td>No aparece nadie</td><td>Mirá <b>Ajustes → Actividad</b>: ahí el robot cuenta qué está haciendo. Si dice que el buscador no responde, es temporal; reintenta solo en la próxima tanda.</td></tr>
+    <tr><td>«Falta instalar»</td><td>Abrí <code>1-INSTALAR</code> y esperá a que diga LISTO.</td></tr>
+    <tr><td>El mapa no se ve</td><td>El mapa necesita internet. Sin conexión, las provincias aparecen como etiquetas.</td></tr>
+    <tr><td>No envía emails</td><td>Probá «Enviarme una prueba»: el mensaje de error dice qué pasa (casi siempre, la contraseña de aplicación).</td></tr>
+    <tr><td>Cambiar de computadora</td><td>Copiá la carpeta entera (lo importante es la subcarpeta <code>datos</code>) y repetí la instalación en la nueva.</td></tr>
+  </table>
+</div>
+</body>
+</html>

@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radar Autónomos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+:root{
+  --papel:#f3efe6; --hoja:#fbf9f4; --tinta:#16211d; --tinta2:#4a5852; --gris:#8a948e; --linea:#ddd6c6;
+  --verde:#0e5a4b; --verde2:#d9e8e1; --cielo:#3f8fc0; --cielo2:#dcebf4; --teja:#b9472f; --teja2:#f5dfd7; --oro:#a87a12; --oro2:#f3e7c6;
+  --serif:"Fraunces",Georgia,serif; --sans:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--papel);color:var(--tinta);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--verde)}
+.wrap{max-width:1320px;margin:0 auto;padding:0 28px 80px}
+
+/* cabecera */
+header{display:flex;align-items:flex-end;gap:24px;padding:26px 0 18px;border-bottom:2px solid var(--tinta);flex-wrap:wrap}
+.marca{font:600 34px/1 var(--serif);letter-spacing:-.02em}
+.marca small{display:block;font:500 12px/1.4 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--tinta2);margin-top:8px}
+.estado{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font:12.5px var(--mono);color:var(--tinta2)}
+.punto{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gris);margin-right:6px;vertical-align:1px}
+.punto.ok{background:var(--verde)} .punto.act{background:var(--oro);animation:lat 1.2s infinite}
+@keyframes lat{50%{opacity:.25}}
+.btn{border:1.5px solid var(--tinta);background:transparent;padding:8px 14px;border-radius:3px;cursor:pointer;font-weight:500;font-size:14px;text-decoration:none;color:var(--tinta);display:inline-block}
+.btn:hover{background:var(--tinta);color:var(--hoja)}
+.btn.pri{background:var(--verde);border-color:var(--verde);color:#fff}.btn.pri:hover{background:#0a4438}
+.btn.min{padding:5px 10px;font-size:13px;border-width:1px}
+.btn:disabled{opacity:.45;cursor:default;background:transparent;color:var(--tinta)}
+
+.aviso{margin:18px 0 0;padding:12px 16px;background:var(--oro2);border-left:4px solid var(--oro);font-size:14px}
+.aviso b{font-weight:600}
+
+/* cifras */
+.cifras{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-bottom:1px solid var(--linea)}
+.cifra{padding:22px 14px 18px 0;border-right:1px solid var(--linea)}
+.cifra:last-child{border-right:0}.cifra+.cifra{padding-left:16px}
+.cifra b{display:block;font:500 38px/1 var(--serif);letter-spacing:-.02em}
+.cifra span{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--tinta2);margin-top:8px}
+.cifra.teja b{color:var(--teja)} .cifra.verde b{color:var(--verde)}
+
+h2{font:600 21px/1.2 var(--serif);margin:0 0 4px;letter-spacing:-.01em}
+.sub{color:var(--tinta2);font-size:13.5px;margin:0 0 14px}
+.dos{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:36px;padding:30px 0;border-bottom:1px solid var(--linea)}
+#mapa{height:440px;background:var(--cielo2);border:1px solid var(--linea)}
+.leaflet-container{font:inherit;background:var(--cielo2)}
+.sinmapa{display:flex;flex-wrap:wrap;gap:6px;padding:14px;height:auto!important;background:var(--hoja)!important}
+.chip{border:1px solid var(--linea);background:var(--hoja);padding:4px 10px;border-radius:99px;font-size:13px;cursor:pointer}
+.chip.on{background:var(--tinta);color:var(--hoja);border-color:var(--tinta)}
+
+.embudo{display:grid;gap:5px;margin-bottom:26px}
+.fila-e{display:grid;grid-template-columns:96px 1fr 38px;gap:10px;align-items:center;cursor:pointer;font-size:13.5px;padding:2px 0}
+.fila-e i{display:block;height:16px;background:var(--verde2);min-width:2px}
+.fila-e b{font:500 13px var(--mono);text-align:right}
+.fila-e.on span{font-weight:600;text-decoration:underline}
+.fila-e[data-e="Llamar"] i,.fila-e[data-e="Respondió"] i{background:var(--teja2)}
+.fila-e[data-e="Cliente"] i{background:var(--verde)}
+.hoy{list-style:none;margin:0;padding:0;border-top:1px solid var(--linea)}
+.hoy li{display:flex;gap:10px;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--linea);cursor:pointer}
+.hoy li:hover{background:var(--hoja)}
+.hoy .q{font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;width:74px;flex:none}
+.hoy .q.r{color:var(--teja)} .hoy .q.l{color:var(--oro)}
+.hoy small{color:var(--tinta2);margin-left:auto;font:12.5px var(--mono);white-space:nowrap}
+.vacio{color:var(--gris);padding:18px 0;font-size:14px}
+
+/* lista */
+.filtros{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:26px 0 14px}
+.filtros input,.filtros select{border:1px solid var(--linea);background:var(--hoja);padding:8px 10px;border-radius:3px;font-size:14px}
+.filtros input{flex:1;min-width:220px}
+.filtros .n{font:13px var(--mono);color:var(--tinta2);margin-left:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font:500 11.5px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--tinta2);text-align:left;padding:8px 10px;border-bottom:1.5px solid var(--tinta)}
+td{padding:11px 10px;border-bottom:1px solid var(--linea);vertical-align:top}
+tbody tr{cursor:pointer}tbody tr:hover{background:var(--hoja)}
+td .nom{font-weight:600}td .per{color:var(--tinta2);font-size:13px}
+.sello{display:inline-block;font:500 11px var(--mono);letter-spacing:.04em;padding:2px 7px;border-radius:2px;background:var(--linea)}
+.sello.Probable{background:var(--verde2);color:var(--verde)} .sello.Posible{background:var(--oro2);color:#6f500a}
+.vias a{display:inline-block;font:500 11.5px var(--mono);border:1px solid var(--linea);padding:2px 6px;border-radius:2px;text-decoration:none;margin:0 3px 3px 0;background:var(--hoja)}
+.vias a:hover{border-color:var(--verde)}
+td select{border:1px solid var(--linea);background:var(--hoja);padding:4px 6px;border-radius:3px;font-size:13px}
+.tabla{overflow-x:auto}
+
+/* ficha y ajustes */
+.velo{position:fixed;inset:0;background:rgba(22,33,29,.35);display:none;z-index:1000}
+.velo.on{display:block}
+.ficha{position:fixed;top:0;right:0;bottom:0;width:min(520px,100%);background:var(--hoja);border-left:2px solid var(--tinta);padding:26px 28px 40px;overflow:auto;z-index:1001;transform:translateX(105%);transition:transform .22s ease}
+.ficha.on{transform:none}
+.ficha.ancha{width:min(760px,100%)}
+.cerrar{position:absolute;top:16px;right:18px;border:0;background:none;font-size:26px;line-height:1;cursor:pointer;color:var(--tinta2)}
+.ficha h3{font:600 26px/1.15 var(--serif);margin:0 30px 4px 0;letter-spacing:-.01em}
+.ficha .linea{color:var(--tinta2);margin:0 0 16px}
+.acc{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 20px}
+dl{display:grid;grid-template-columns:120px 1fr;gap:8px 14px;margin:0 0 18px;font-size:14px}
+dt{color:var(--tinta2);font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding-top:2px}
+dd{margin:0;overflow-wrap:anywhere}
+label{display:block;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--tinta2);margin:14px 0 5px}
+.ficha input[type=text],.ficha input[type=password],.ficha input[type=number],.ficha textarea,.ficha select{width:100%;border:1px solid var(--linea);background:#fff;padding:8px 10px;border-radius:3px}
+.ficha textarea{min-height:84px;resize:vertical;line-height:1.45}
+.par{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tres{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+.pest{display:flex;gap:0;border-bottom:1.5px solid var(--tinta);margin:18px 0 6px;flex-wrap:wrap}
+.pest button{border:0;background:none;padding:9px 14px;cursor:pointer;font-weight:500;color:var(--tinta2)}
+.pest button.on{background:var(--tinta);color:var(--hoja)}
+.hoja-aj{display:none}.hoja-aj.on{display:block}
+.nota{font-size:13px;color:var(--tinta2);margin:8px 0 0}
+.nota.al{background:var(--teja2);border-left:3px solid var(--teja);padding:9px 12px;color:var(--tinta)}
+.check{display:flex;gap:9px;align-items:center;margin:16px 0 0;font-size:14px;text-transform:none;letter-spacing:0;color:var(--tinta)}
+.check input{width:17px;height:17px}
+pre.log{background:var(--tinta);color:#d6e2dc;font:12px/1.55 var(--mono);padding:14px;white-space:pre-wrap;max-height:380px;overflow:auto;margin:10px 0 0}
+#tostada{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--tinta);color:var(--hoja);padding:11px 18px;border-radius:3px;font-size:14px;z-index:2000;display:none;max-width:90vw}
+@media (max-width:980px){.dos{grid-template-columns:1fr}.cifras{grid-template-columns:repeat(4,1fr)}.cifra{border-bottom:1px solid var(--linea)}.wrap{padding:0 16px 60px}}
+@media (max-width:560px){.cifras{grid-template-columns:repeat(2,1fr)}.marca{font-size:27px}.par,.tres{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="marca">Radar Autónomos<small>Monotributistas y profesionales independientes · Argentina</small></div>
+    <div class="estado">
+      <span id="eRobot"><span class="punto"></span>—</span>
+      <span id="eHora"></span>
+      <button class="btn pri" id="bBuscar">Buscar ahora</button>
+      <button class="btn" id="bAjustes">Ajustes</button>
+      <a class="btn" href="/api/exportar.csv">Exportar</a>
+      <button class="btn" id="bApagar" title="Cierra el programa y el robot">Apagar</button>
+    </div>
+  </header>
+  <div id="aviso"></div>
+
+  <section class="cifras" id="cifras"></section>
+
+  <section class="dos">
+    <div>
+      <h2>Dónde están</h2>
+      <p class="sub">Cada círculo es una provincia; cuanto más grande, más contactos. Tocá uno para filtrar la lista.</p>
+      <div id="mapa"></div>
+    </div>
+    <div>
+      <h2>En qué etapa</h2>
+      <p class="sub">Tocá una etapa para ver solo esos contactos.</p>
+      <div class="embudo" id="embudo"></div>
+      <h2>Para hoy</h2>
+      <p class="sub">Quién respondió y a quién toca llamar.</p>
+      <ul class="hoy" id="hoy"></ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="filtros">
+      <input type="search" id="fQ" placeholder="Buscar por nombre, oficio o localidad">
+      <select id="fRubro"></select><select id="fProv"></select>
+      <select id="fUni"><option value="">Unipersonal: todos</option><option>Probable</option><option>Posible</option><option>Sin confirmar</option></select>
+      <select id="fEtapa"></select>
+      <span class="n" id="nLista"></span>
+    </div>
+    <div class="tabla"><table>
+      <thead><tr><th>Negocio</th><th>Oficio</th><th>Lugar</th><th>Unipersonal</th><th>Contacto</th><th>Etapa</th></tr></thead>
+      <tbody id="filas"></tbody>
+    </table></div>
+    <div class="vacio" id="sinDatos" hidden>Todavía no hay contactos. Tocá «Buscar ahora» y el robot empieza a traerlos; tarda unos minutos.</div>
+  </section>
+</div>
+
+<div class="velo" id="velo"></div>
+<aside class="ficha" id="ficha"></aside>
+<aside class="ficha ancha" id="ajustes"></aside>
+<div id="tostada"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const seguro = u => /^(https?:\/\/|mailto:|tel:)/i.test(String(u || "")) ? esc(u) : "#";
+const PROV = {"Ciudad Autónoma de Buenos Aires":[-34.61,-58.44],"Buenos Aires":[-36.68,-60.56],"Catamarca":[-27.34,-66.95],"Chaco":[-26.39,-60.77],
+  "Chubut":[-43.79,-68.53],"Córdoba":[-32.14,-63.80],"Corrientes":[-28.77,-57.80],"Entre Ríos":[-32.06,-59.20],"Formosa":[-24.89,-59.93],
+  "Jujuy":[-23.32,-65.76],"La Pampa":[-37.13,-65.45],"La Rioja":[-29.69,-67.18],"Mendoza":[-34.63,-68.58],"Misiones":[-26.88,-54.65],
+  "Neuquén":[-38.64,-70.12],"Río Negro":[-40.41,-67.23],"Salta":[-24.30,-64.81],"San Juan":[-30.87,-68.89],"San Luis":[-33.76,-66.03],
+  "Santa Cruz":[-48.82,-69.96],"Santa Fe":[-30.71,-60.95],"Santiago del Estero":[-27.78,-63.25],"Tierra del Fuego":[-54.36,-67.64],"Tucumán":[-26.95,-65.36]};
+let D = {contactos:[], ajustes:{}, etapas:[], tonos:[], estado:{}};
+const F = {q:"", rubro:"", prov:"", uni:"", etapa:""};
+let abierta = null, mapa = null, capa = null, pestAj = "datos";
+
+async function api(ruta, cuerpo){
+  const r = await fetch(ruta, cuerpo === undefined ? {} : {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(cuerpo)});
+  return r.json();
+}
+function tostada(m){ const t=$("tostada"); t.textContent=m; t.style.display="block"; clearTimeout(tostada.t); tostada.t=setTimeout(()=>t.style.display="none", 5200); }
+function fecha(iso){ if(!iso) return ""; const d=new Date(iso); return isNaN(d) ? "" : d.toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit"})+" "+d.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"}); }
+
+async function cargar(){
+  try{ D = await api("/api/todo"); }catch(e){ $("eRobot").innerHTML='<span class="punto"></span>programa cerrado'; return; }
+  pintar();
+}
+function filtrados(){
+  const q = F.q.trim().toLowerCase();
+  return D.contactos.filter(c => (!F.rubro || c.rubro===F.rubro) && (!F.prov || c.provincia===F.prov) && (!F.uni || c.unipersonal===F.uni) &&
+    (!F.etapa || c.etapa===F.etapa) && (!q || [c.nombre,c.persona,c.oficio,c.localidad,c.provincia,c.actividad].join(" ").toLowerCase().includes(q)));
+}
+function pintar(){
+  const e = D.estado, C = D.contactos;
+  $("eRobot").innerHTML = e.buscando ? '<span class="punto act"></span>buscando ahora' :
+    '<span class="punto '+(e.motor?"ok":"")+'"></span>'+(e.ultima_busqueda ? "última búsqueda "+esc(fecha(e.ultima_busqueda)) : "sin búsquedas todavía");
+  $("bBuscar").disabled = !!e.buscando;
+  const av = [];
+  if((e.falta||[]).length) av.push("Para que los mensajes salgan con tus datos, completá en Ajustes: <b>"+esc(e.falta.join(", "))+"</b>.");
+  if(!e.correo_listo) av.push("El correo automático está apagado: los emails se abren en tu programa de correo, listos para enviar. Podés conectarlo en Ajustes → Correo.");
+  else if(!D.ajustes.envios_automaticos) av.push("Tu correo está conectado pero los envíos automáticos están apagados (Ajustes → Correo).");
+  $("aviso").innerHTML = av.map(a=>'<div class="aviso">'+a+'</div>').join("");
+
+  const n = k => C.filter(k).length;
+  $("cifras").innerHTML = [
+    ["Contactos", C.length, ""], ["Probable unipersonal", n(c=>c.unipersonal==="Probable"), ""], ["Con WhatsApp", n(c=>c.whatsapp), ""],
+    ["Con email", n(c=>c.email), ""], ["Por llamar", n(c=>c.etapa==="Llamar"), "teja"], ["Respondieron", n(c=>c.etapa==="Respondió"), "teja"],
+    ["Clientes", n(c=>c.etapa==="Cliente"), "verde"]].map(x=>'<div class="cifra '+x[2]+'"><b>'+x[1]+'</b><span>'+x[0]+'</span></div>').join("");
+
+  const max = Math.max(1, ...D.etapas.map(et=>n(c=>c.etapa===et)));
+  $("embudo").innerHTML = D.etapas.map(et=>{ const k=n(c=>c.etapa===et);
+    return '<div class="fila-e '+(F.etapa===et?"on":"")+'" data-e="'+esc(et)+'"><span>'+esc(et)+'</span><i style="width:'+(k/max*100)+'%"></i><b>'+k+'</b></div>'; }).join("");
+  const hoy = C.filter(c=>c.etapa==="Respondió").concat(C.filter(c=>c.etapa==="Llamar")).slice(0,9);
+  $("hoy").innerHTML = hoy.length ? hoy.map(c=>'<li data-k="'+esc(c.clave)+'"><span class="q '+(c.etapa==="Respondió"?"r":"l")+'">'+(c.etapa==="Respondió"?"Respondió":"Llamar")+
+    '</span><span>'+esc(c.persona||c.nombre)+'</span><small>'+esc(c.whatsapp||c.telefono||c.email||"")+'</small></li>').join("") : '<li class="vacio" style="cursor:default">Nada pendiente por ahora.</li>';
+
+  opciones("fRubro","Rubro: todos",[...new Set(C.map(c=>c.rubro).filter(Boolean))].sort(),F.rubro);
+  opciones("fProv","Provincia: todas",[...new Set(C.map(c=>c.provincia).filter(Boolean))].sort(),F.prov);
+  opciones("fEtapa","Etapa: todas",D.etapas,F.etapa);
+  $("fUni").value = F.uni;
+  lista(); pintarMapa();
+  if(abierta && !$("ficha").contains(document.activeElement)){ const c=C.find(x=>x.clave===abierta); if(c) ficha(c); }
+}
+function opciones(id, todas, vals, sel){ $(id).innerHTML = '<option value="">'+todas+'</option>'+vals.map(v=>'<option '+(v===sel?"selected":"")+'>'+esc(v)+'</option>').join(""); }
+function lista(){
+  const L = filtrados();
+  $("nLista").textContent = L.length+" de "+D.contactos.length;
+  $("sinDatos").hidden = D.contactos.length>0;
+  $("filas").innerHTML = L.slice(0,400).map(c=>'<tr data-k="'+esc(c.clave)+'"><td><div class="nom">'+esc(c.nombre)+'</div><div class="per">'+esc(c.persona||"")+'</div></td>'+
+    '<td>'+esc(c.oficio)+'<div class="per">'+esc(c.rubro)+'</div></td><td>'+esc(c.localidad)+'<div class="per">'+esc(c.provincia)+'</div></td>'+
+    '<td><span class="sello '+esc(c.unipersonal)+'">'+esc(c.unipersonal)+'</span></td><td class="vias">'+vias(c)+'</td>'+
+    '<td><select data-etapa="'+esc(c.clave)+'">'+D.etapas.map(et=>'<option '+(et===c.etapa?"selected":"")+'>'+esc(et)+'</option>').join("")+'</select></td></tr>').join("");
+}
+function vias(c){
+  return (c.wa?'<a href="'+seguro(c.wa)+'" target="_blank" rel="noopener" title="Abre WhatsApp con el mensaje escrito">WhatsApp</a>':"")+
+    (c.email?'<a href="'+seguro(c.mailto||("mailto:"+c.email))+'" title="Abre tu correo con el mensaje escrito">Email</a>':"")+
+    (c.telefono?'<a href="tel:'+esc(c.telefono.replace(/[^\d+]/g,""))+'">Tel</a>':"")+(c.web?'<a href="'+seguro(c.web)+'" target="_blank" rel="noopener">Web</a>':"");
+}
+function pintarMapa(){
+  const cnt = {}; D.contactos.forEach(c=>cnt[c.provincia]=(cnt[c.provincia]||0)+1);
+  const host = $("mapa");
+  if(!window.L){
+    host.className="sinmapa";
+    host.innerHTML = Object.keys(cnt).sort().map(p=>'<span class="chip '+(F.prov===p?"on":"")+'" data-p="'+esc(p)+'">'+esc(p)+" · "+cnt[p]+'</span>').join("") || '<span class="vacio">Sin datos todavía.</span>';
+    return;
+  }
+  if(!mapa){
+    mapa = L.map(host,{scrollWheelZoom:false,minZoom:3,maxZoom:9,zoomSnap:.5,attributionControl:true}).setView([-38.6,-64.5],4);
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles © Esri"}).addTo(mapa);
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}",{opacity:.8}).addTo(mapa);
+    capa = L.layerGroup().addTo(mapa);
+  }
+  capa.clearLayers();
+  const max = Math.max(1,...Object.values(cnt));
+  Object.keys(PROV).forEach(p=>{ const k=cnt[p]||0, on=F.prov===p;
+    const m = L.circleMarker(PROV[p],{radius:k?7+22*Math.sqrt(k/max):4, color:on?"#16211d":"#0e5a4b", weight:on?3:1.2, fillColor:k?"#0e5a4b":"#8a948e", fillOpacity:k?.55:.25});
+    m.bindTooltip(p+" · "+k+(k===1?" contacto":" contactos"));
+    m.on("click",()=>{ F.prov = F.prov===p ? "" : p; pintar(); });
+    m.addTo(capa); });
+}
+
+function ficha(c){
+  abierta = c.clave;
+  $("ficha").innerHTML = '<button class="cerrar" data-cerrar>×</button><h3>'+esc(c.persona||c.nombre)+'</h3>'+
+    '<p class="linea">'+esc(c.persona?c.nombre+" · ":"")+esc(c.oficio)+" · "+esc(c.localidad)+", "+esc(c.provincia)+'</p>'+
+    '<span class="sello '+esc(c.unipersonal)+'">Unipersonal: '+esc(c.unipersonal)+'</span>'+
+    '<div class="acc">'+(c.wa?'<a class="btn pri" href="'+seguro(c.wa)+'" target="_blank" rel="noopener">WhatsApp con mensaje</a>':"")+
+      (c.email?'<a class="btn" href="'+seguro(c.mailto||("mailto:"+c.email))+'">Email con mensaje</a>':"")+
+      (c.telefono||c.whatsapp?'<a class="btn" href="tel:'+esc((c.telefono||c.whatsapp).replace(/[^\d+]/g,""))+'">Llamar</a>':"")+
+      (c.web?'<a class="btn" href="'+seguro(c.web)+'" target="_blank" rel="noopener">Ver su web</a>':"")+'</div>'+
+    '<dl>'+[["Qué hace",c.actividad],["Señales",c.senales],["WhatsApp",c.whatsapp],["Teléfono",c.telefono],["Email",c.email],["Dirección",c.direccion],
+      ["Último email",fecha(c.ultimo_envio)],["Próximo",fecha(c.proximo_envio)],["Alta",c.alta],["Aviso",c.notas]].filter(x=>x[1]).map(x=>'<dt>'+x[0]+'</dt><dd>'+esc(x[1])+'</dd>').join("")+
+      '<dt>Fuentes</dt><dd>'+(c.fuentes||[]).map(u=>'<a href="'+seguro(u)+'" target="_blank" rel="noopener">'+esc(u.replace(/^https?:\/\//,""))+'</a>').join("<br>")+'</dd></dl>'+
+    '<label>Etapa</label><select id="xEtapa">'+D.etapas.map(et=>'<option '+(et===c.etapa?"selected":"")+'>'+esc(et)+'</option>').join("")+'</select>'+
+    '<label>Nombre de la persona</label><input type="text" id="xPersona" value="'+esc(c.persona||"")+'">'+
+    '<label>Tus notas</label><textarea id="xNotas">'+esc(c.notas_crm||"")+'</textarea>'+
+    '<div class="acc"><button class="btn pri" id="xGuardar">Guardar</button></div>';
+  $("ficha").classList.add("on"); $("velo").classList.add("on");
+}
+function cerrar(){ abierta=null; $("ficha").classList.remove("on"); $("ajustes").classList.remove("on"); $("velo").classList.remove("on"); }
+
+function abrirAjustes(){
+  const a = D.ajustes, co = a.correo||{}, pl = a.plantillas||[];
+  const zonas = (a.zonas||[]).map(z=>[z.localidad,z.provincia,(z.alias||[]).join(", ")].filter(Boolean).join(" | ")).join("\n");
+  const rubros = Object.keys(a.rubros||{}).map(r=>r+": "+a.rubros[r].join(", ")).join("\n");
+  const P = ["datos","mensajes","correo","busqueda","actividad"], N = ["Tus datos","Mensajes","Correo","Búsqueda","Actividad"];
+  $("ajustes").innerHTML = '<button class="cerrar" data-cerrar>×</button><h3>Ajustes</h3><p class="linea">Todo se guarda en esta computadora.</p>'+
+    '<div class="pest">'+P.map((p,i)=>'<button data-p="'+p+'" class="'+(p===pestAj?"on":"")+'">'+N[i]+'</button>').join("")+'</div>'+
+    '<div class="hoja-aj '+(pestAj==="datos"?"on":"")+'" data-h="datos">'+
+      '<label>Tu nombre</label><input type="text" id="aNombre" value="'+esc(a.mi_nombre)+'">'+
+      '<label>Prepaga o productora que representás</label><input type="text" id="aEmpresa" value="'+esc(a.empresa)+'">'+
+      '<label>Qué ofrecés (una o dos frases; va dentro de cada mensaje)</label><textarea id="aOferta">'+esc(a.oferta)+'</textarea>'+
+      '<label>Firma</label><textarea id="aFirma">'+esc(a.firma)+'</textarea>'+
+      '<p class="nota">Quitá los corchetes [ ] al completar. Mientras quede alguno, no sale ningún email automático.</p></div>'+
+    '<div class="hoja-aj '+(pestAj==="mensajes"?"on":"")+'" data-h="mensajes">'+
+      '<div class="tres"><div><label>Tono</label><select id="aTono">'+D.tonos.map(t=>'<option '+(t===a.tono?"selected":"")+'>'+esc(t)+'</option>').join("")+'</select></div>'+
+      '<div><label>&nbsp;</label><button class="btn min" id="aRegen">Reescribir los 3 emails con este tono</button></div></div>'+
+      pl.map((p,i)=>'<label>Email '+(i+1)+' · asunto</label><input type="text" id="aAs'+i+'" value="'+esc(p[0])+'"><label>Email '+(i+1)+' · texto</label><textarea id="aCu'+i+'" style="min-height:150px">'+esc(p[1])+'</textarea>').join("")+
+      '<label>Mensaje de WhatsApp</label><textarea id="aWa">'+esc(a.plantilla_whatsapp)+'</textarea>'+
+      '<p class="nota">Se completan solos: {Nombre} {Negocio} {Oficio} {Lugar} {MiNombre} {Empresa} {Oferta} {Saludo} {Gancho} {Cierre} {Firma} {Baja}. No borres {Baja}: es la opción de no recibir más correos.</p></div>'+
+    '<div class="hoja-aj '+(pestAj==="correo"?"on":"")+'" data-h="correo">'+
+      '<p class="nota">Si conectás tu correo, el programa envía solo la secuencia de 3 emails, detecta quién respondió y quién pidió la baja. Si no, los emails se abren en tu correo para que los envíes vos.</p>'+
+      '<label>Proveedor</label><select id="aProv"><option value="">Elegí para completar los datos técnicos</option><option value="gmail">Gmail</option><option value="outlook">Outlook / Hotmail</option><option value="yahoo">Yahoo</option></select>'+
+      '<div class="par"><div><label>Tu dirección de correo</label><input type="text" id="aUsuario" value="'+esc(co.usuario)+'" autocomplete="off"></div>'+
+      '<div><label>Contraseña de aplicación '+(co.clave_guardada?"(guardada; dejá vacío para no cambiarla)":"")+'</label><input type="password" id="aClave" autocomplete="new-password"></div></div>'+
+      '<div class="par"><div class="tres"><div><label>Servidor de salida (SMTP)</label><input type="text" id="aSmtp" value="'+esc(co.smtp_host)+'"></div><div><label>Puerto</label><input type="number" id="aSmtpP" value="'+esc(co.smtp_puerto)+'"></div></div>'+
+      '<div class="tres"><div><label>Servidor de entrada (IMAP)</label><input type="text" id="aImap" value="'+esc(co.imap_host)+'"></div><div><label>Puerto</label><input type="number" id="aImapP" value="'+esc(co.imap_puerto)+'"></div></div></div>'+
+      '<p class="nota">La contraseña de aplicación la creás vos en la configuración de seguridad de tu correo (no es tu contraseña normal). Queda guardada solo en esta computadora, en la carpeta «datos».</p>'+
+      '<div class="par"><div><label>Máximo de emails por día</label><input type="number" id="aLimite" value="'+esc(a.limite_diario)+'"></div><div><label>Enviados hoy</label><input type="text" value="'+esc(D.estado.enviados_hoy)+'" disabled></div></div>'+
+      '<div class="par"><div><label>Días hasta el email 2</label><input type="number" id="aD1" value="'+esc(a.dias_recordatorio_1)+'"></div><div><label>Días hasta el email 3</label><input type="number" id="aD2" value="'+esc(a.dias_recordatorio_2)+'"></div></div>'+
+      '<label>Días tras el email 3 para pasar a «Llamar»</label><input type="number" id="aD3" value="'+esc(a.dias_llamada)+'">'+
+      '<label class="check"><input type="checkbox" id="aAuto" '+(a.envios_automaticos?"checked":"")+'> Enviar los emails automáticamente</label>'+
+      '<p class="nota al">Antes de activarlo, usá «Enviarme una prueba»: te llegan a vos los 3 emails tal como los recibiría un contacto. No subas de 50 por día para que tu proveedor no te marque como spam.</p>'+
+      '<div class="acc"><button class="btn" id="aPrueba">Enviarme una prueba</button><button class="btn" id="aCiclo">Revisar y enviar ahora</button></div></div>'+
+    '<div class="hoja-aj '+(pestAj==="busqueda"?"on":"")+'" data-h="busqueda">'+
+      '<div class="par"><div><label>Buscar cada (horas)</label><input type="number" id="aCada" value="'+esc(a.buscar_cada_horas)+'"></div><div><label>Búsquedas por vez</label><input type="number" id="aCiclo2" value="'+esc(a.por_ciclo)+'"></div></div>'+
+      '<label>Zonas · una por línea: Localidad | Provincia | otros nombres</label><textarea id="aZonas" style="min-height:170px">'+esc(zonas)+'</textarea>'+
+      '<label>Oficios · una línea por rubro: Rubro: oficio, oficio, oficio</label><textarea id="aRubros" style="min-height:170px">'+esc(rubros)+'</textarea>'+
+      '<label class="check"><input type="checkbox" id="aSinConf" '+(a.incluir_sin_confirmar?"checked":"")+'> Guardar también los que no dan señales claras de ser una sola persona</label>'+
+      '<p class="nota">El robot solo busca mientras este programa está abierto. «Unipersonal» es una estimación a partir de lo que dice la web de cada uno; no confirma que sea monotributista.</p></div>'+
+    '<div class="hoja-aj '+(pestAj==="actividad"?"on":"")+'" data-h="actividad"><pre class="log">'+esc((D.estado.log||[]).join("\n")||"Sin actividad todavía.")+'</pre></div>'+
+    '<div class="acc" style="margin-top:22px"><button class="btn pri" id="aGuardar">Guardar ajustes</button></div>';
+  $("ajustes").classList.add("on"); $("velo").classList.add("on");
+}
+function leerAjustes(){
+  const v = id => $(id).value, n = id => Number($(id).value)||0;
+  const zonas = v("aZonas").split("\n").map(l=>l.split("|").map(s=>s.trim())).filter(p=>p[0]&&p[1])
+    .map(p=>({localidad:p[0], provincia:p[1], alias:(p[2]||"").split(",").map(s=>s.trim()).filter(Boolean)}));
+  const rubros = {}; v("aRubros").split("\n").forEach(l=>{ const i=l.indexOf(":"); if(i<1) return;
+    const of = l.slice(i+1).split(",").map(s=>s.trim()).filter(Boolean); if(of.length) rubros[l.slice(0,i).trim()] = of; });
+  const pl = (D.ajustes.plantillas||[]).map((p,i)=>[v("aAs"+i), v("aCu"+i)]);
+  return {mi_nombre:v("aNombre"), empresa:v("aEmpresa"), oferta:v("aOferta"), firma:v("aFirma"), tono:v("aTono"), plantillas:pl,
+    plantilla_whatsapp:v("aWa"), envios_automaticos:$("aAuto").checked, limite_diario:n("aLimite"), dias_recordatorio_1:n("aD1"),
+    dias_recordatorio_2:n("aD2"), dias_llamada:n("aD3"), buscar_cada_horas:n("aCada"), por_ciclo:n("aCiclo2"), incluir_sin_confirmar:$("aSinConf").checked,
+    zonas, rubros, correo:{usuario:v("aUsuario").trim(), clave:v("aClave"), smtp_host:v("aSmtp").trim(), smtp_puerto:n("aSmtpP"), imap_host:v("aImap").trim(), imap_puerto:n("aImapP")}};
+}
+async function guardarAjustes(extra){
+  const r = await api("/api/ajustes", Object.assign(leerAjustes(), extra||{}));
+  await cargar(); return r.msg;
+}
+
+document.addEventListener("click", async ev => {
+  const t = ev.target;
+  if(t.closest("[data-cerrar]") || t.id==="velo") return cerrar();
+  if(t.closest(".vias a") || t.closest("td select")) return;
+  const fe = t.closest(".fila-e"); if(fe){ F.etapa = F.etapa===fe.dataset.e ? "" : fe.dataset.e; return pintar(); }
+  const ch = t.closest(".chip"); if(ch){ F.prov = F.prov===ch.dataset.p ? "" : ch.dataset.p; return pintar(); }
+  const fila = t.closest("[data-k]"); if(fila){ const c=D.contactos.find(x=>x.clave===fila.dataset.k); if(c) ficha(c); return; }
+  const pe = t.closest(".pest button"); if(pe){ pestAj=pe.dataset.p; document.querySelectorAll(".pest button").forEach(b=>b.classList.toggle("on",b===pe));
+    document.querySelectorAll(".hoja-aj").forEach(h=>h.classList.toggle("on",h.dataset.h===pestAj)); return; }
+  if(t.id==="bBuscar"){ const r=await api("/api/buscar",{}); tostada(r.msg); return cargar(); }
+  if(t.id==="bAjustes") return abrirAjustes();
+  if(t.id==="bApagar"){ if(!confirm("Se cierra el programa y el robot deja de buscar. ¿Apagar?")) return; const r=await api("/api/apagar",{}); tostada(r.msg); return; }
+  if(t.id==="xGuardar"){ const r=await api("/api/contacto",{clave:abierta, etapa:$("xEtapa").value, notas_crm:$("xNotas").value, persona:$("xPersona").value});
+    tostada(r.msg==="ok"?"Guardado.":r.msg); document.activeElement.blur(); return cargar(); }
+  if(t.id==="aGuardar"){ tostada(await guardarAjustes()); return abrirAjustes(); }
+  if(t.id==="aRegen"){ if(!confirm("Se reemplazan los 3 emails por los del tono elegido. ¿Seguir?")) return; tostada(await guardarAjustes({regenerar_plantillas:true})); return abrirAjustes(); }
+  if(t.id==="aPrueba"){ await guardarAjustes(); tostada("Enviando la prueba…"); const r=await api("/api/correo/prueba",{}); tostada(r.msg); return abrirAjustes(); }
+  if(t.id==="aCiclo"){ await guardarAjustes(); const r=await api("/api/correo/ciclo",{}); tostada(r.msg); return abrirAjustes(); }
+});
+document.addEventListener("change", async ev => {
+  const t = ev.target;
+  if(t.dataset.etapa){ const r=await api("/api/contacto",{clave:t.dataset.etapa, etapa:t.value}); if(r.msg!=="ok") tostada(r.msg); return cargar(); }
+  if(t.id==="aProv"){ const P={gmail:["smtp.gmail.com",465,"imap.gmail.com",993],outlook:["smtp-mail.outlook.com",587,"outlook.office365.com",993],yahoo:["smtp.mail.yahoo.com",465,"imap.mail.yahoo.com",993]}[t.value];
+    if(P){ $("aSmtp").value=P[0]; $("aSmtpP").value=P[1]; $("aImap").value=P[2]; $("aImapP").value=P[3]; } return; }
+  if(t.id==="fRubro") F.rubro=t.value; else if(t.id==="fProv") F.prov=t.value; else if(t.id==="fUni") F.uni=t.value; else if(t.id==="fEtapa") F.etapa=t.value; else return;
+  pintar();
+});
+$("fQ").addEventListener("input", e => { F.q = e.target.value; lista(); });
+document.addEventListener("keydown", e => { if(e.key==="Escape") cerrar(); });
+setInterval(()=>{ $("eHora").textContent = new Date().toLocaleTimeString("es-AR",{timeZone:"America/Argentina/Buenos_Aires",hour:"2-digit",minute:"2-digit"})+" Buenos Aires"; }, 1000);
+setInterval(()=>{ if(!$("ajustes").classList.contains("on")) cargar(); }, 20000);
+cargar();
+</script>
+</body>
+</html>

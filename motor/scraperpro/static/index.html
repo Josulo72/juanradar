@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ScraperPro</title>
+<style>
+:root{
+  --paper:#f6f4ef; --panel:#fffdf8; --ink:#16181d; --ink-2:#4a4f5a; --ink-3:#8a8f99; --line:#e4e0d6;
+  --accent:#d9480f; --accent-ink:#fff; --ok:#2b8a3e; --warn:#b7791f; --bad:#c92a2a; --code:#1d2026;
+  --r:10px; --mono:"JetBrains Mono","Cascadia Code",ui-monospace,Consolas,monospace;
+  --sans:"Inter","Segoe UI Variable","Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);font:14px/1.5 var(--sans)}
+a{color:var(--accent)}
+.app{display:grid;grid-template-columns:232px 1fr;min-height:100vh}
+aside{border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:22px;position:sticky;top:0;height:100vh}
+.brand{display:flex;align-items:baseline;gap:8px;padding:0 8px}
+.brand b{font-size:19px;letter-spacing:-.02em}
+.brand span{font:11px var(--mono);color:var(--ink-3)}
+nav{display:flex;flex-direction:column;gap:2px}
+nav button{all:unset;cursor:pointer;padding:8px 10px;border-radius:8px;color:var(--ink-2);display:flex;justify-content:space-between;align-items:center}
+nav button:hover{background:#efece4;color:var(--ink)}
+nav button.on{background:var(--ink);color:#fff}
+nav small{font:11px var(--mono);opacity:.6}
+.side-foot{margin-top:auto;font-size:12px;color:var(--ink-3);padding:0 8px;display:grid;gap:6px}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;background:var(--ink-3)}
+.dot.ok{background:var(--ok)} .dot.bad{background:var(--bad)}
+main{padding:28px 36px 60px;max-width:1240px}
+h1{font-size:26px;letter-spacing:-.03em;margin:0 0 4px}
+.lede{color:var(--ink-2);margin:0 0 22px;max-width:70ch}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
+label{display:grid;gap:5px;font-size:12px;color:var(--ink-2);font-weight:550}
+input,select,textarea{font:13px var(--sans);color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:8px;padding:9px 11px;outline:none;width:100%}
+textarea{font-family:var(--mono);font-size:12.5px;min-height:120px;resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:var(--ink);box-shadow:0 0 0 3px #16181d14}
+.row{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+.row>*{flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12px;cursor:pointer;user-select:none;background:#fff;color:var(--ink-2)}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn{all:unset;cursor:pointer;background:var(--accent);color:var(--accent-ink);padding:9px 16px;border-radius:8px;font-weight:600;text-align:center;flex:0 0 auto}
+.btn:hover{filter:brightness(.95)} .btn[disabled]{opacity:.5;pointer-events:none}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.out{margin-top:16px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.tabs button{all:unset;cursor:pointer;padding:7px 11px;font-size:12.5px;color:var(--ink-3);border-bottom:2px solid transparent}
+.tabs button.on{color:var(--ink);border-color:var(--accent)}
+pre{margin:0;background:var(--code);color:#e6e6e6;border-radius:8px;padding:14px;overflow:auto;max-height:560px;font:12px/1.55 var(--mono);white-space:pre-wrap;word-break:break-word}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.tag{font:11.5px var(--mono);padding:3px 8px;border-radius:6px;background:#efece4;color:var(--ink-2)}
+.tag.ok{background:#e6f4ea;color:var(--ok)} .tag.bad{background:#fdecec;color:var(--bad)} .tag.warn{background:#fdf3e1;color:var(--warn)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);font-weight:600}
+td code{font:12px var(--mono)}
+.muted{color:var(--ink-3)} .hide{display:none}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid #fff6;border-top-color:#fff;border-radius:50%;animation:s .7s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes s{to{transform:rotate(360deg)}}
+.bar{height:6px;background:#ece8de;border-radius:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--accent);transition:width .4s}
+img.shot{max-width:100%;border:1px solid var(--line);border-radius:8px}
+@media (max-width:900px){.app{grid-template-columns:1fr}aside{position:static;height:auto}.g2,.g3{grid-template-columns:1fr}main{padding:20px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="brand"><b>ScraperPro</b><span id="ver">v1</span></div>
+  <nav id="nav">
+    <button data-v="scrape" class="on">Scrape <small>1 URL</small></button>
+    <button data-v="crawl">Crawl <small>sitio</small></button>
+    <button data-v="map">Map <small>URLs</small></button>
+    <button data-v="search">Buscar <small>web</small></button>
+    <button data-v="extract">Extract <small>IA</small></button>
+    <button data-v="robots">Robots <small>flujos</small></button>
+    <button data-v="jobs">Trabajos <small>historial</small></button>
+    <button data-v="monitors">Monitores <small>cambios</small></button>
+    <button data-v="schedules">Programación <small>cron</small></button>
+    <button data-v="settings">Ajustes</button>
+  </nav>
+  <div class="side-foot">
+    <div><span class="dot" id="d-api"></span>API <span id="s-api" class="muted">…</span></div>
+    <div><span class="dot" id="d-llm"></span>LLM <span id="s-llm" class="muted">…</span></div>
+    <div><a href="/docs" target="_blank">Documentación de la API →</a></div>
+  </div>
+</aside>
+<main id="main"></main>
+</div>
+
+<template id="t-scrape">
+  <h1>Scrape</h1>
+  <p class="lede">Una URL a markdown, datos estructurados o capturas. El motor escala solo: HTTP con huella de Chrome → navegador → navegador stealth con proxy.</p>
+  <div class="card grid">
+    <div class="row"><label style="flex:4">URL<input id="s-url" placeholder="https://books.toscrape.com" value="https://books.toscrape.com/"></label>
+      <label>Motor<select id="s-engine"><option value="auto">Automático</option><option value="http">HTTP</option><option value="browser">Navegador</option><option value="stealth">Stealth</option></select></label>
+      <button class="btn" id="s-go">Scrapear</button></div>
+    <div><div class="muted" style="font-size:12px;margin-bottom:6px">Formatos</div>
+      <div class="chips" id="s-formats">
+        <span class="chip on" data-f="markdown">markdown</span><span class="chip" data-f="links">links</span><span class="chip" data-f="lists">listas automáticas</span>
+        <span class="chip" data-f="structuredData">datos estructurados</span><span class="chip" data-f="screenshot">captura</span><span class="chip" data-f="html">html limpio</span>
+        <span class="chip" data-f="images">imágenes</span><span class="chip" data-f="summary">resumen (IA)</span><span class="chip" data-f="branding">branding</span><span class="chip" data-f="network">APIs ocultas</span>
+      </div></div>
+    <div class="row">
+      <label>Solo contenido principal<select id="s-main"><option value="1">Sí</option><option value="0">No</option></select></label>
+      <label>País<select id="s-country"><option value="">—</option><option>ES</option><option>US</option><option>GB</option><option>FR</option><option>DE</option><option>MX</option></select></label>
+      <label>Esperar (ms)<input id="s-wait" type="number" value="0"></label>
+      <label>Móvil<select id="s-mobile"><option value="0">No</option><option value="1">Sí</option></select></label>
+    </div>
+    <label>Extracción por selectores (opcional, JSON — sin IA y sin coste)
+      <textarea id="s-select" placeholder='{"list":"article.product_pod","fields":{"titulo":"h3 a@title","precio":{"selector":".price_color","type":"price"}}}'></textarea></label>
+    <label>Extracción con IA (opcional): prompt<input id="s-prompt" placeholder="Extrae nombre, precio y valoración de cada producto"></label>
+  </div>
+  <div class="out" id="s-out"></div>
+</template>
+
+<template id="t-crawl">
+  <h1>Crawl</h1>
+  <p class="lede">Recorre un sitio entero. Respeta robots.txt y su crawl-delay, prioriza sitemap, evita trampas de URLs infinitas y se puede reanudar.</p>
+  <div class="card grid">
+    <div class="row"><label style="flex:4">URL inicial<input id="c-url" value="https://books.toscrape.com/"></label><label>Límite<input id="c-limit" type="number" value="25"></label><label>Profundidad<input id="c-depth" type="number" placeholder="∞"></label><button class="btn" id="c-go">Lanzar crawl</button></div>
+    <div class="row"><label>Incluir rutas (regex, coma)<input id="c-inc" placeholder="/catalogue/"></label><label>Excluir rutas (regex, coma)<input id="c-exc" placeholder="/category/"></label><label>Subdominios<select id="c-sub"><option value="0">No</option><option value="1">Sí</option></select></label></div>
+  </div>
+  <div class="out" id="c-out"></div>
+</template>
+
+<template id="t-map">
+  <h1>Map</h1>
+  <p class="lede">Todas las URLs de un sitio: sitemaps (con índices y .gz), robots.txt y enlaces. Con "buscar", ordenadas por relevancia.</p>
+  <div class="card row"><label style="flex:4">URL<input id="m-url" value="https://books.toscrape.com/"></label><label>Buscar<input id="m-q" placeholder="poetry"></label><label>Niveles<input id="m-depth" type="number" value="1"></label><button class="btn" id="m-go">Mapear</button></div>
+  <div class="out" id="m-out"></div>
+</template>
+
+<template id="t-search">
+  <h1>Buscar</h1>
+  <p class="lede">Búsqueda web (SearXNG propio si lo configuras, DuckDuckGo o Bing) y, si quieres, scrape de cada resultado.</p>
+  <div class="card row"><label style="flex:4">Consulta<input id="q-q" value="web scraping python"></label><label>Resultados<input id="q-n" type="number" value="5"></label><label>Scrapear<select id="q-scrape"><option value="0">No</option><option value="1">Sí (markdown)</option></select></label><button class="btn" id="q-go">Buscar</button></div>
+  <div class="out" id="q-out"></div>
+</template>
+
+<template id="t-extract">
+  <h1>Extract</h1>
+  <p class="lede">Datos estructurados de varias URLs con IA. Admite comodines (<code>https://sitio.com/*</code>). Necesita un LLM configurado.</p>
+  <div class="card grid">
+    <label>URLs (una por línea)<textarea id="e-urls" style="min-height:70px">https://books.toscrape.com/catalogue/page-1.html</textarea></label>
+    <label>Prompt<input id="e-prompt" value="Lista de libros con título, precio y valoración (1-5)"></label>
+    <label>Esquema JSON (opcional)<textarea id="e-schema" style="min-height:80px"></textarea></label>
+    <div><button class="btn" id="e-go">Extraer</button></div>
+  </div>
+  <div class="out" id="e-out"></div>
+</template>
+
+<template id="t-robots">
+  <h1>Robots</h1>
+  <p class="lede">Flujos reutilizables: navegar, hacer clic, rellenar, iniciar sesión, paginar, entrar en cada ficha y extraer. Genera uno automáticamente a partir de una URL y ajústalo.</p>
+  <div class="card grid">
+    <div class="row"><label style="flex:4">Generar a partir de URL<input id="r-url" value="https://books.toscrape.com/"></label><label style="flex:3">Qué quieres (opcional, usa IA si hay)<input id="r-prompt" placeholder="productos con precio"></label><button class="btn ghost" id="r-auto">Generar</button></div>
+    <label>Definición del robot (JSON)<textarea id="r-def" style="min-height:300px"></textarea></label>
+    <div class="row" style="justify-content:flex-start"><button class="btn" id="r-test" style="flex:0">Probar</button><button class="btn ghost" id="r-save" style="flex:0">Guardar</button><span class="muted" id="r-msg" style="flex:1"></span></div>
+  </div>
+  <div class="out" id="r-out"></div>
+  <h2 style="margin-top:30px;font-size:17px">Guardados</h2>
+  <div class="card" id="r-list"></div>
+</template>
+
+<template id="t-jobs">
+  <h1>Trabajos</h1>
+  <p class="lede">Historial de crawls, lotes, extracciones y ejecuciones de robots. Exporta a JSON, CSV o Excel.</p>
+  <div class="card" id="j-list"></div>
+</template>
+
+<template id="t-monitors">
+  <h1>Monitores de cambios</h1>
+  <p class="lede">Vigila páginas y te avisa por webhook cuando cambian, con diff línea a línea. Puedes ignorar fechas y contadores con regex.</p>
+  <div class="card grid">
+    <div class="row"><label>Nombre<input id="mo-name" value="Precios"></label><label style="flex:3">URLs (coma)<input id="mo-urls" value="https://books.toscrape.com/"></label><label>Cron<input id="mo-cron" value="0 */6 * * *"></label></div>
+    <div class="row"><label style="flex:3">Webhook (opcional)<input id="mo-wh" placeholder="https://..."></label><label style="flex:3">Ignorar (regex, coma)<input id="mo-ign" placeholder="\d{2}:\d{2}"></label><button class="btn" id="mo-go">Crear</button></div>
+  </div>
+  <div class="out" id="mo-out"></div>
+  <div class="card" id="mo-list" style="margin-top:16px"></div>
+</template>
+
+<template id="t-schedules">
+  <h1>Programación</h1>
+  <p class="lede">Ejecuta robots, crawls o scrapes con expresiones cron (zona horaria Europe/Madrid).</p>
+  <div class="card row"><label>Tipo<select id="sc-kind"><option value="robot">robot</option><option value="crawl">crawl</option><option value="scrape">scrape</option><option value="batch_scrape">batch_scrape</option></select></label>
+    <label style="flex:3">Destino (id de robot o JSON)<input id="sc-target" placeholder="robot_xxxx"></label><label>Cron<input id="sc-cron" value="0 8 * * *"></label><button class="btn" id="sc-go">Programar</button></div>
+  <div class="card" id="sc-list" style="margin-top:16px"></div>
+</template>
+
+<template id="t-settings">
+  <h1>Ajustes</h1>
+  <p class="lede">La configuración del servidor está en <code>D:\ScraperPro\.env</code> (proxies, LLM, secreto de webhooks). Aquí solo la clave de acceso de este navegador.</p>
+  <div class="card grid">
+    <div class="row"><label style="flex:4">API key (si has creado alguna)<input id="k-key" type="password" placeholder="sp-..."></label><button class="btn ghost" id="k-save">Guardar en este navegador</button><button class="btn" id="k-new">Crear clave</button></div>
+    <div id="k-out"></div>
+  </div>
+  <div class="card" style="margin-top:16px"><pre id="st-out">…</pre></div>
+</template>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const key=()=>localStorage.getItem('sp_key')||'';
+async function api(path,opt={}){
+  const h={'Content-Type':'application/json',...(key()?{Authorization:'Bearer '+key()}:{})};
+  const r=await fetch(path,{...opt,headers:{...h,...(opt.headers||{})}});
+  const ct=r.headers.get('content-type')||'';
+  const body=ct.includes('json')?await r.json():await r.text();
+  if(!r.ok) throw new Error(typeof body==='string'?body:(body.detail||body.error||JSON.stringify(body)));
+  return body;
+}
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function busy(btn,on,label){if(on){btn.dataset.l=btn.textContent;btn.innerHTML='<span class="spin"></span>'+(label||'Trabajando');btn.disabled=true}else{btn.textContent=btn.dataset.l;btn.disabled=false}}
+function err(el,e){el.innerHTML=`<div class="card"><span class="tag bad">error</span> ${esc(e.message||e)}</div>`}
+function view(v){
+  $$('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  $('#main').innerHTML=''; $('#main').appendChild($('#t-'+v).content.cloneNode(true));
+  (init[v]||(()=>{}))(); location.hash=v;
+}
+function tabs(el,panes){
+  const names=Object.keys(panes).filter(k=>panes[k]!==undefined&&panes[k]!==null);
+  if(!names.length){el.innerHTML='';return}
+  el.innerHTML=`<div class="tabs">${names.map((n,i)=>`<button data-t="${n}" class="${i?'':'on'}">${n}</button>`).join('')}</div><div class="pane"></div>`;
+  const show=n=>{el.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===n));const v=panes[n];
+    el.querySelector('.pane').innerHTML=typeof v==='string'&&v.startsWith('<')?v:`<pre>${esc(typeof v==='string'?v:JSON.stringify(v,null,2))}</pre>`};
+  el.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>show(b.dataset.t)); show(names[0]);
+}
+function metaTags(m){
+  const q=m.quality||{};const t=[`<span class="tag ${m.statusCode<400?'ok':'bad'}">HTTP ${m.statusCode}</span>`,`<span class="tag">${esc(m.engine)}</span>`,`<span class="tag">${m.elapsedMs} ms</span>`,
+   `<span class="tag ${q.score>=.8?'ok':q.score>=.5?'warn':'bad'}">calidad ${q.score??'—'}</span>`];
+  if(m.blocked)t.push(`<span class="tag bad">bloqueo: ${esc(m.blocked)}</span>`);
+  if(m.cacheState==='hit')t.push('<span class="tag">caché</span>');
+  (m.warnings||[]).forEach(w=>t.push(`<span class="tag warn">${esc(w)}</span>`));
+  return `<div class="meta">${t.join('')}</div>`;
+}
+const init={
+  scrape(){
+    $$('#s-formats .chip').forEach(c=>c.onclick=()=>c.classList.toggle('on'));
+    $('#s-go').onclick=async()=>{
+      const b=$('#s-go'),out=$('#s-out');busy(b,1,'Scrapeando');
+      const formats=$$('#s-formats .chip.on').map(c=>c.dataset.f);
+      try{const sel=$('#s-select').value.trim(); if(sel)formats.push({type:'select',...JSON.parse(sel)});
+        if($('#s-prompt').value.trim())formats.push({type:'json',prompt:$('#s-prompt').value.trim()});
+        const body={url:$('#s-url').value.trim(),formats,engine:$('#s-engine').value,onlyMainContent:$('#s-main').value==='1',
+          waitFor:+$('#s-wait').value||0,mobile:$('#s-mobile').value==='1',captureNetwork:formats.includes('network')};
+        if($('#s-country').value)body.location={country:$('#s-country').value};
+        const r=await api('/v1/scrape',{method:'POST',body:JSON.stringify(body)}); const d=r.data||{};
+        out.innerHTML=`<div class="card">${metaTags(d.metadata||{})}<div id="s-tabs"></div></div>`;
+        tabs($('#s-tabs'),{markdown:d.markdown,select:d.select,json:d.json,'listas':d.lists,summary:d.summary,links:d.links,
+          'datos estructurados':d.structuredData,captura:d.screenshot?`<img class="shot" src="${d.screenshot}">`:undefined,html:d.html,
+          imágenes:d.images,branding:d.branding,'APIs ocultas':d.network,metadata:d.metadata});
+      }catch(e){err(out,e)}finally{busy(b,0)}
+    };
+  },
+  crawl(){
+    $('#c-go').onclick=async()=>{
+      const b=$('#c-go'),out=$('#c-out');busy(b,1,'Lanzando');
+      const split=s=>s.split(',').map(x=>x.trim()).filter(Boolean);
+      try{const body={url:$('#c-url').value.trim(),limit:+$('#c-limit').value||25,allowSubdomains:$('#c-sub').value==='1'};
+        if($('#c-depth').value)body.maxDiscoveryDepth=+$('#c-depth').value;
+        if($('#c-inc').value)body.includePaths=split($('#c-inc').value); if($('#c-exc').value)body.excludePaths=split($('#c-exc').value);
+        const r=await api('/v1/crawl',{method:'POST',body:JSON.stringify(body)}); poll(r.id,out,'crawl');
+      }catch(e){err(out,e)}finally{busy(b,0)}
+    };
+  },
+  map(){ $('#m-go').onclick=async()=>{const b=$('#m-go'),out=$('#m-out');busy(b,1,'Mapeando');
+    try{const r=await api('/v1/map',{method:'POST',body:JSON.stringify({url:$('#m-url').value.trim(),search:$('#m-q').value||undefined,depth:+$('#m-depth').value||1})});
+      out.innerHTML=`<div class="card"><div class="meta"><span class="tag ok">${r.links.length} URLs</span></div><table><tr><th>URL</th><th>Título</th><th>Relevancia</th></tr>${r.links.slice(0,500).map(l=>`<tr><td><a href="${esc(l.url)}" target="_blank">${esc(l.url)}</a></td><td>${esc(l.title||'')}</td><td>${l.relevance??''}</td></tr>`).join('')}</table></div>`;
+    }catch(e){err(out,e)}finally{busy(b,0)}}},
+  search(){ $('#q-go').onclick=async()=>{const b=$('#q-go'),out=$('#q-out');busy(b,1,'Buscando');
+    try{const body={query:$('#q-q').value,limit:+$('#q-n').value||5}; if($('#q-scrape').value==='1')body.scrapeOptions={formats:['markdown']};
+      const r=await api('/v1/search',{method:'POST',body:JSON.stringify(body)});
+      out.innerHTML=`<div class="card"><div class="meta"><span class="tag">${esc(r.provider||'sin resultados')}</span></div>${r.data.map(x=>`<div style="padding:10px 0;border-bottom:1px solid var(--line)"><a href="${esc(x.url)}" target="_blank"><b>${esc(x.title||x.url)}</b></a><div class="muted" style="font-size:12px">${esc(x.url)}</div><div>${esc(x.description||'')}</div>${x.markdown?`<details><summary class="muted">markdown</summary><pre>${esc(x.markdown.slice(0,4000))}</pre></details>`:''}</div>`).join('')}</div>`;
+    }catch(e){err(out,e)}finally{busy(b,0)}}},
+  extract(){ $('#e-go').onclick=async()=>{const b=$('#e-go'),out=$('#e-out');busy(b,1,'Extrayendo');
+    try{const body={urls:$('#e-urls').value.split('\n').map(s=>s.trim()).filter(Boolean),prompt:$('#e-prompt').value};
+      if($('#e-schema').value.trim())body.schema=JSON.parse($('#e-schema').value);
+      const r=await api('/v1/extract?wait=true',{method:'POST',body:JSON.stringify(body)}); out.innerHTML='<div class="card" id="e-tabs"></div>';
+      tabs($('#e-tabs'),{datos:r.data,fuentes:r.sources,avisos:r.warnings});
+    }catch(e){err(out,e)}finally{busy(b,0)}}},
+  robots(){
+    const sample={name:"Libros",startUrl:"https://books.toscrape.com/",steps:[{extract:{name:"libros",list:"article.product_pod",
+      fields:{titulo:"h3 a@title",url:"h3 a@href",precio:{selector:".price_color",type:"price"},valoracion:{selector:"p.star-rating",attr:"class",regex:"star-rating (\\w+)",type:"number"}},
+      limit:60,paginate:{type:"next",selector:"li.next a",max:2}}}],validate:{minItems:{libros:1}}};
+    $('#r-def').value=JSON.stringify(sample,null,2);
+    const list=async()=>{try{const r=await api('/v1/robots');$('#r-list').innerHTML=r.data.length?`<table><tr><th>Nombre</th><th>Id</th><th></th></tr>${r.data.map(x=>`<tr><td>${esc(x.name)}</td><td><code>${x.id}</code></td><td style="text-align:right"><button class="btn ghost" data-load="${x.id}">Editar</button> <button class="btn" data-run="${x.id}">Ejecutar</button></td></tr>`).join('')}</table>`:'<span class="muted">Aún no hay robots guardados.</span>';
+      $$('[data-load]').forEach(b=>b.onclick=async()=>{const r=await api('/v1/robots/'+b.dataset.load);$('#r-def').value=JSON.stringify(r.data.definition,null,2);$('#r-def').dataset.id=b.dataset.load;window.scrollTo(0,0)});
+      $$('[data-run]').forEach(b=>b.onclick=async()=>{const r=await api(`/v1/robots/${b.dataset.run}/run`,{method:'POST',body:'{}'});poll(r.id,$('#r-out'),'robot')});
+    }catch(e){err($('#r-list'),e)}};
+    list();
+    $('#r-auto').onclick=async()=>{const b=$('#r-auto');busy(b,1,'Analizando');try{const r=await api('/v1/robots/auto',{method:'POST',body:JSON.stringify({url:$('#r-url').value.trim(),prompt:$('#r-prompt').value||undefined})});
+      $('#r-def').value=JSON.stringify(r.robot,null,2);delete $('#r-def').dataset.id;$('#r-out').innerHTML='<div class="card" id="r-tabs"></div>';tabs($('#r-tabs'),{'listas candidatas':r.candidates,paginación:r.pagination});}catch(e){err($('#r-out'),e)}finally{busy(b,0)}};
+    $('#r-test').onclick=async()=>{const b=$('#r-test');busy(b,1,'Ejecutando');try{const r=await api('/v1/robots/test',{method:'POST',body:$('#r-def').value});
+      const res=r.result;$('#r-out').innerHTML=`<div class="card"><div class="meta"><span class="tag ${r.success?'ok':'bad'}">${res.status}</span><span class="tag">${res.elapsedSeconds}s</span>${Object.entries(res.counts||{}).map(([k,v])=>`<span class="tag">${esc(k)}: ${v}</span>`).join('')}${res.error?`<span class="tag bad">${esc(res.error)}</span>`:''}</div><div id="r-tabs"></div></div>`;
+      tabs($('#r-tabs'),{datos:res.data,registro:res.logs,capturas:(res.screenshots||[]).length?res.screenshots.map(s=>`<img class="shot" src="${s}">`).join(''):undefined,problemas:res.problems});}catch(e){err($('#r-out'),e)}finally{busy(b,0)}};
+    $('#r-save').onclick=async()=>{try{const id=$('#r-def').dataset.id;const r=await api(id?'/v1/robots/'+id:'/v1/robots',{method:id?'PUT':'POST',body:$('#r-def').value});$('#r-msg').textContent='Guardado'+(r.id?' · '+r.id:'');list()}catch(e){$('#r-msg').textContent=e.message}};
+  },
+  async jobs(){try{const r=await api('/v1/jobs?limit=100');$('#j-list').innerHTML=r.data.length?`<table><tr><th>Tipo</th><th>Estado</th><th>Progreso</th><th>Creado</th><th>Exportar</th></tr>${r.data.map(j=>`<tr><td><b>${j.kind}</b><div class="muted"><code>${j.id}</code></div><div class="muted">${esc(j.request.url||j.request.robot_id||(j.request.urls||[]).length+' URLs'||'')}</div></td><td><span class="tag ${j.status==='completed'?'ok':j.status==='failed'?'bad':'warn'}">${j.status}</span>${j.error?`<div class="muted" style="max-width:300px">${esc(j.error)}</div>`:''}</td><td>${j.completed}/${j.total}${j.failed?` · ${j.failed} fallos`:''}</td><td class="muted">${j.created_at}</td><td>${['json','csv','xlsx'].map(f=>`<a href="/v1/jobs/${j.id}/export?format=${f}" target="_blank">${f}</a>`).join(' · ')}</td></tr>`).join('')}</table>`:'<span class="muted">Sin trabajos todavía.</span>'}catch(e){err($('#j-list'),e)}},
+  monitors(){const list=async()=>{const r=await api('/v1/monitors');$('#mo-list').innerHTML=r.data.length?`<table><tr><th>Nombre</th><th>URLs</th><th>Estado</th><th></th></tr>${r.data.map(m=>`<tr><td>${esc(m.name)}</td><td>${esc((m.config.urls||[]).join(', '))}</td><td><span class="tag ${m.last_status==='changed'?'warn':'ok'}">${m.last_status||'—'}</span><div class="muted">${m.last_checked_at||''}</div></td><td><button class="btn ghost" data-chk="${m.id}">Comprobar</button></td></tr>`).join('')}</table>`:'<span class="muted">Sin monitores.</span>';
+      $$('[data-chk]').forEach(b=>b.onclick=async()=>{busy(b,1,'…');try{const r=await api(`/v1/monitors/${b.dataset.chk}/check`,{method:'POST'});$('#mo-out').innerHTML='<div class="card" id="mo-tabs"></div>';tabs($('#mo-tabs'),{resultado:r.data});list()}catch(e){err($('#mo-out'),e)}})};list();
+    $('#mo-go').onclick=async()=>{const b=$('#mo-go');busy(b,1,'Creando');try{const split=s=>s.split(',').map(x=>x.trim()).filter(Boolean);const body={name:$('#mo-name').value,urls:split($('#mo-urls').value),cron:$('#mo-cron').value||null};
+      if($('#mo-wh').value)body.webhook=$('#mo-wh').value;if($('#mo-ign').value)body.ignorePatterns=split($('#mo-ign').value);
+      await api('/v1/monitors',{method:'POST',body:JSON.stringify(body)});list()}catch(e){err($('#mo-out'),e)}finally{busy(b,0)}}},
+  schedules(){const list=async()=>{const r=await api('/v1/schedules');$('#sc-list').innerHTML=r.data.length?`<table><tr><th>Tipo</th><th>Destino</th><th>Cron</th><th>Próxima</th><th></th></tr>${r.data.map(s=>`<tr><td>${s.target_kind}</td><td><code>${esc(JSON.stringify(s.target))}</code></td><td><code>${esc(s.cron)}</code></td><td class="muted">${s.next_run_at||''}</td><td><button class="btn ghost" data-del="${s.id}">Quitar</button></td></tr>`).join('')}</table>`:'<span class="muted">Nada programado.</span>';
+      $$('[data-del]').forEach(b=>b.onclick=async()=>{await api('/v1/schedules/'+b.dataset.del,{method:'DELETE'});list()})};list();
+    $('#sc-go').onclick=async()=>{try{let t=$('#sc-target').value.trim();try{t=JSON.parse(t)}catch{} await api('/v1/schedules',{method:'POST',body:JSON.stringify({target_kind:$('#sc-kind').value,target:t,cron:$('#sc-cron').value})});list()}catch(e){alert(e.message)}}},
+  async settings(){$('#k-key').value=key();$('#k-save').onclick=()=>{localStorage.setItem('sp_key',$('#k-key').value.trim());status()};
+    $('#k-new').onclick=async()=>{try{const r=await api('/v1/keys',{method:'POST',body:JSON.stringify({name:'panel'})});$('#k-out').innerHTML=`<div class="card"><b>Nueva clave</b> (no se vuelve a mostrar):<pre>${esc(r.key)}</pre></div>`;localStorage.setItem('sp_key',r.key);$('#k-key').value=r.key}catch(e){err($('#k-out'),e)}};
+    try{$('#st-out').textContent=JSON.stringify(await api('/v1/stats'),null,2)}catch(e){$('#st-out').textContent=e.message}}
+};
+async function poll(id,out,kind){
+  out.innerHTML=`<div class="card"><div class="meta"><span class="tag">${kind}</span><code class="tag">${id}</code><span class="tag warn" id="p-st">en cola</span></div><div class="bar"><i id="p-bar" style="width:3%"></i></div><div id="p-res" style="margin-top:12px"></div></div>`;
+  for(;;){
+    let j; try{j=(await api('/v1/jobs/'+id)).data}catch(e){err(out,e);return}
+    const pct=j.total?Math.round(100*(j.completed+j.failed)/j.total):5;$('#p-bar')&&($('#p-bar').style.width=Math.max(3,pct)+'%');
+    $('#p-st')&&($('#p-st').textContent=`${j.status} · ${j.completed}/${j.total||'?'}`);
+    if(['completed','failed','cancelled'].includes(j.status)){
+      $('#p-st').className='tag '+(j.status==='completed'?'ok':'bad');
+      const links=['json','csv','xlsx'].map(f=>`<a href="/v1/jobs/${id}/export?format=${f}" target="_blank">${f}</a>`).join(' · ');
+      if(kind==='robot'){const res=j.result||{};$('#p-res').innerHTML=`<div class="muted">Exportar: ${links}</div><div id="p-tabs"></div>`;tabs($('#p-tabs'),{datos:res.data,registro:res.logs,error:j.error||undefined})}
+      else{const d=await api(`/v1/${kind==='crawl'?'crawl':'batch/scrape'}/${id}?limit=50`);$('#p-res').innerHTML=`<div class="muted">Exportar: ${links}</div><table><tr><th>URL</th><th>Título</th><th>Motor</th></tr>${d.data.map(x=>`<tr><td><a href="${esc(x.metadata.url)}" target="_blank">${esc(x.metadata.url)}</a></td><td>${esc(x.metadata.title||'')}</td><td><span class="tag">${esc(x.metadata.engine)}</span></td></tr>`).join('')}</table>`}
+      return;
+    }
+    await new Promise(r=>setTimeout(r,1500));
+  }
+}
+async function status(){try{const h=await api('/health');$('#d-api').className='dot ok';$('#s-api').textContent='en línea';$('#ver').textContent='v'+h.version;
+  $('#d-llm').className='dot '+(h.llm?'ok':'');$('#s-llm').textContent=h.llm?'configurado':'no configurado'}catch(e){$('#d-api').className='dot bad';$('#s-api').textContent='sin conexión'}}
+$$('#nav button').forEach(b=>b.onclick=()=>view(b.dataset.v));
+view((location.hash||'#scrape').slice(1)||'scrape'); status();
+</script>
+</body>
+</html>
