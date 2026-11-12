@@ -1,0 +1,2 @@
+# Los .bat se guardan tal cual (CRLF) para que funcionen al descargar el ZIP en Windows.
+*.bat -text
